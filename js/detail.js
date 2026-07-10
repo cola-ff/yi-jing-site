@@ -37,18 +37,18 @@
      * yaoNames: ["初九","九二",...] 从下往上6爻名
      */
     function renderBigYaoSVG(yaoLines, yaoNames) {
-        var lineH = 28;      // 每爻高度
-        var gap = 10;        // 爻间距
-        var yangW = 120;     // 阳爻宽度
-        var yinGap = 16;     // 阴爻中间间隙
+        var lineH = 18;      // 每爻高度
+        var gap = 6;        // 爻间距
+        var yangW = 80;     // 阳爻宽度
+        var yinGap = 10;     // 阴爻中间间隙
         var yinHalfW = (yangW - yinGap) / 2; // 阴爻半宽
-        var labelW = 50;     // 左侧爻名区宽度
+        var labelW = 36;     // 左侧爻名区宽度
         var totalH = lineH * 6 + gap * 5;
         var svgW = labelW + yangW + 20;
         var svgH = totalH + 10;
 
         var svg = '<svg class="big-yao-svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" xmlns="http://www.w3.org/2000/svg">';
-        svg += '<style>.yao-rect{fill:#1a1a1a;}.yao-label{font-family:Noto Serif SC,serif;font-size:13px;fill:#6b6356;}</style>';
+        svg += '<style>.yao-rect{fill:#1a1a1a;}.yao-label{font-family:Noto Serif SC,serif;font-size:10px;fill:#6b6356;}</style>';
 
         // 从上往下绘制（第6爻在上，第1爻在下）
         for (var i = 5; i >= 0; i--) {

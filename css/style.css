@@ -358,7 +358,7 @@ body {
 /* ---------- 卦头信息区 ---------- */
 .gua-header {
     text-align: center;
-    padding: 50px 20px 30px;
+    padding: 24px 16px 16px;
 }
 
 .gua-header .gua-id {
@@ -375,17 +375,17 @@ body {
 
 .gua-header .gua-fullname-large {
     font-family: var(--font-title);
-    font-size: 2.5rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--color-ink);
-    margin-bottom: 16px;
+    margin-bottom: 8px;
     letter-spacing: 0.1em;
 }
 
 .gua-header .gua-symbol-large {
-    font-size: 3rem;
+    font-size: 1.8rem;
     color: var(--color-cinnabar);
-    margin: 16px 0;
+    margin: 8px 0;
     line-height: 1;
 }
 
@@ -404,12 +404,14 @@ body {
 .gua-hexagram {
     display: flex;
     justify-content: center;
-    margin: 30px auto;
-    padding: 20px;
+    margin: 12px auto;
+    padding: 8px;
 }
 
 .gua-hexagram svg {
     display: block;
+    width: 140px;
+    height: auto;
 }
 
 /* ---------- Tab 切换 ---------- */
