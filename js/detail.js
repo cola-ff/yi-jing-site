@@ -149,6 +149,15 @@
         html += '<div class="classic-text">' + d.fengShui + '</div>';
         html += '</div>';
 
+        // 倪海厦·地脉道
+        if (d.niHaiSha) {
+            html += '<h3 class="subsection-title">倪海厦 · 地脉道</h3>';
+            html += '<div class="classic-text-block">';
+            var diJiText = d.niHaiSha.replace(/\n/g, '<br>');
+            html += '<div class="classic-text" style="line-height:2">' + diJiText + '</div>';
+            html += '</div>';
+        }
+
         document.getElementById('tab-diji').innerHTML = html;
     }
 
@@ -202,6 +211,15 @@
         html += '<div class="classic-label">修身</div>';
         html += '<div class="classic-text">' + r.cultivation + '</div>';
         html += '</div>';
+
+        // 倪海厦·人间道
+        if (r.niHaiSha) {
+            html += '<h3 class="subsection-title">倪海厦 · 人间道</h3>';
+            html += '<div class="classic-text-block">';
+            var renJiText = r.niHaiSha.replace(/\n/g, '<br>');
+            html += '<div class="classic-text" style="line-height:2">' + renJiText + '</div>';
+            html += '</div>';
+        }
 
         document.getElementById('tab-renji').innerHTML = html;
     }
