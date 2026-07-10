@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卦详情 · 易经六十四卦</title>
+    <meta name="description" content="易经六十四卦详情页，含天纪、地纪、人纪三个板块。">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- 返回栏 -->
+    <header class="detail-header">
+        <div class="container">
+            <a href="index.html" class="back-btn">← 返回总览</a>
+            <div class="nav-arrows">
+                <a href="#" class="nav-arrow" id="prev-gua">← 上一卦</a>
+                <a href="#" class="nav-arrow" id="next-gua">下一卦 →</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 卦头信息 -->
+    <section class="gua-header" id="gua-header">
+        <div class="loading">加载中</div>
+    </section>
+
+    <!-- Tab 切换区 -->
+    <main class="container">
+        <div class="tab-container">
+            <!-- Tab 导航 -->
+            <div class="tab-nav">
+                <button class="tab-btn active" data-tab="tianji">
+                    天 纪
+                    <span class="tab-subtitle">天道 · 自然规律</span>
+                </button>
+                <button class="tab-btn" data-tab="diji">
+                    地 纪
+                    <span class="tab-subtitle">地道 · 方位环境</span>
+                </button>
+                <button class="tab-btn" data-tab="renji">
+                    人 纪
+                    <span class="tab-subtitle">人道 · 人事应用</span>
+                </button>
+            </div>
+
+            <!-- 天纪内容 -->
+            <div class="tab-content active" id="tab-tianji">
+                <div class="loading">加载中</div>
+            </div>
+
+            <!-- 地纪内容 -->
+            <div class="tab-content" id="tab-diji">
+                <div class="loading">加载中</div>
+            </div>
+
+            <!-- 人纪内容 -->
+            <div class="tab-content" id="tab-renji">
+                <div class="loading">加载中</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="site-footer">
+        <div class="container">
+            <p>易经六十四卦 · <span class="cinnabar">天纪 · 地纪 · 人纪</span></p>
+            <p>卦辞、爻辞、彖辞、象辞均采《周易》原文 · 仅供个人学习研究</p>
+        </div>
+    </footer>
+
+    <script src="data/gua64.js"></script>
+    <script src="js/detail.js"></script>
+</body>
+</html>
