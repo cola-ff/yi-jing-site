@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>易经管理 - 内容编辑</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f5f7fa;color:#333}
+.header{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.header h1{font-size:18px}
+.header a{color:#fff;text-decoration:none;font-size:13px;opacity:.8}
+.container{max-width:1200px;margin:20px auto;padding:0 16px}
+.login-box{max-width:360px;margin:80px auto;background:#fff;border-radius:12px;padding:32px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.login-box h2{text-align:center;margin-bottom:20px;color:#1a1a2e}
+.login-box input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:15px;margin-bottom:12px}
+.login-box button{width:100%;padding:13px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer}
+.gua-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.gua-card{background:#fff;border-radius:10px;padding:16px;cursor:pointer;transition:all .2s;border:2px solid transparent}
+.gua-card:hover{border-color:#667eea;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.gua-card .num{font-size:12px;color:#999}
+.gua-card .name{font-size:18px;font-weight:700;color:#1a1a2e;margin:4px 0}
+.gua-card .symbol{font-size:24px;color:#c0392b}
+.gua-card .fullName{font-size:13px;color:#666}
+.edit-panel{background:#fff;border-radius:12px;padding:24px;margin-bottom:20px}
+.edit-panel h2{margin-bottom:16px;color:#1a1a2e}
+.field-group{margin-bottom:16px}
+.field-group label{display:block;font-size:13px;color:#555;margin-bottom:4px;font-weight:600}
+.field-group input,.field-group textarea,.field-group select{width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px}
+.field-group textarea{min-height:100px;font-family:inherit;line-height:1.8}
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid #eee}
+.tab-bar button{padding:10px 20px;border:none;background:none;cursor:pointer;font-size:14px;color:#888;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab-bar button.active{color:#1a1a2e;border-bottom-color:#1a1a2e;font-weight:600}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:14px}
+.btn-primary{background:#667eea;color:#fff}.btn-primary:hover{background:#5568d3}
+.btn-danger{background:#e74c3c;color:#fff}.btn-danger:hover{background:#c0392b}
+.btn-success{background:#27ae60;color:#fff}
+.btn-outline{background:#fff;border:1px solid #ddd;color:#555}
+.actions{display:flex;gap:8px;margin-top:20px}
+.yao-editor{border:1px solid #eee;border-radius:8px;padding:12px;margin-bottom:8px}
+.yao-editor .yao-row{display:flex;gap:8px;align-items:center}
+.yao-editor input{flex:1}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#27ae60;color:#fff;padding:12px 24px;border-radius:8px;z-index:1000;display:none}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>易经 · 内容管理</h1>
+<a href="/">← 返回网站</a>
+</div>
+<div class="container" id="app">
+<div class="login-box">
+<h2>管理登录</h2>
+<input type="password" id="pwd" placeholder="管理密码" onkeydown="if(event.key==='Enter')doLogin()">
+<button onclick="doLogin()">登 录</button>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var API='https://yi-jing-api.meishuda.workers.dev';
+var token='';
+var allGua=[];
+var currentGua=null;
+var currentTab='tianJi';
+
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none'},2000)}
+
+async function doLogin(){
+var pwd=document.getElementById('pwd').value;
+var res=await fetch(API+'/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pwd})});
+var d=await res.json();
+if(d.success){token=d.token;localStorage.setItem('yj_token',token);loadList()}
+else showToast('密码错误');
+}
+
+function authHeaders(){return {'Content-Type':'application/json','Authorization':'Bearer '+token}}
+
+async function loadList(){
+var res=await fetch(API+'/api/gua64');
+var d=await res.json();
+allGua=d.data||[];
+renderList();
+}
+
+function renderList(){
+var app=document.getElementById('app');
+var html='<div style="margin-bottom:16px"><button class="btn btn-primary" onclick="showAddGua()">+ 新增卦</button></div>';
+html+='<div class="gua-list">';
+allGua.forEach(function(g){
+html+='<div class="gua-card" onclick="editGua('+g.id+')">';
+html+='<div class="num">第'+g.id+'卦</div>';
+html+='<div class="name">'+(g.name||'')+'</div>';
+html+='<div class="symbol">'+(g.symbol||'')+'</div>';
+html+='<div class="fullName">'+(g.fullName||'')+'</div>';
+html+='</div>';
+});
+html+='</div>';
+app.innerHTML=html;
+}
+
+async function editGua(id){
+var res=await fetch(API+'/api/gua/'+id);
+var d=await res.json();
+currentGua=d.gua;
+currentTab='tianJi';
+renderEdit();
+}
+
+function renderEdit(){
+var g=currentGua;
+var app=document.getElementById('app');
+var html='<div class="edit-panel">';
+html+='<h2>编辑：第'+g.id+'卦 · '+(g.fullName||'')+'</h2>';
+html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">';
+html+='<div class="field-group"><label>卦名</label><input id="f_name" value="'+esc(g.name||'')+'"></div>';
+html+='<div class="field-group"><label>全称</label><input id="f_fullName" value="'+esc(g.fullName||'')+'"></div>';
+html+='<div class="field-group"><label>卦象符号</label><input id="f_symbol" value="'+esc(g.symbol||'')+'"></div>';
+html+='<div class="field-group"><label>上卦</label><input id="f_upperGua" value="'+esc(g.upperGua||'')+'"></div>';
+html+='<div class="field-group"><label>下卦</label><input id="f_lowerGua" value="'+esc(g.lowerGua||'')+'"></div>';
+html+='<div class="field-group"><label>爻线（逗号分隔）</label><input id="f_yaoLines" value="'+(g.yaoLines||[]).join(',')+'"></div>';
+html+='</div>';
+
+html+='<div class="tab-bar">';
+html+='<button class="'+(currentTab==='tianJi'?'active':'')+'" onclick="switchTab(\'tianJi\')">天纪</button>';
+html+='<button class="'+(currentTab==='diJi'?'active':'')+'" onclick="switchTab(\'diJi\')">地纪</button>';
+html+='<button class="'+(currentTab==='renJi'?'active':'')+'" onclick="switchTab(\'renJi\')">人纪</button>';
+html+='</div>';
+
+// 天纪
+html+='<div class="tab-content '+(currentTab==='tianJi'?'active':'')+'" id="tab_tianJi">';
+var t=g.tianJi||{};
+html+='<div class="field-group"><label>自然取象</label><input id="t_nature" value="'+esc(t.nature||'')+'"></div>';
+html+='<div class="field-group"><label>卦德</label><input id="t_virtue" value="'+esc(t.virtue||'')+'"></div>';
+html+='<div class="field-group"><label>象辞</label><textarea id="t_xiangCi">'+esc(t.xiangCi||'')+'</textarea></div>';
+html+='<div class="field-group"><label>天时</label><input id="t_season" value="'+esc(t.season||'')+'"></div>';
+html+='<div class="field-group"><label>五行属性</label><input id="t_wuXing" value="'+esc(t.wuXing||'')+'"></div>';
+html+='<div class="field-group"><label>天文对应</label><input id="t_astro" value="'+esc(t.astro||'')+'"></div>';
+html+='</div>';
+
+// 地纪
+html+='<div class="tab-content '+(currentTab==='diJi'?'active':'')+'" id="tab_diJi">';
+var d=g.diJi||{};
+html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+html+='<div class="field-group"><label>先天方位</label><input id="d_xianTian" value="'+esc((d.direction||{}).xianTian||'')+'"></div>';
+html+='<div class="field-group"><label>后天方位</label><input id="d_houTian" value="'+esc((d.direction||{}).houTian||'')+'"></div>';
+html+='<div class="field-group"><label>先天河洛数</label><input id="d_hlXianTian" value="'+esc((d.heLuoNumber||{}).xianTian||'')+'"></div>';
+html+='<div class="field-group"><label>后天河洛数</label><input id="d_hlHouTian" value="'+esc((d.heLuoNumber||{}).houTian||'')+'"></div>';
+html+='</div>';
+html+='<div class="field-group"><label>地理取象</label><input id="d_geography" value="'+esc(d.geography||'')+'"></div>';
+html+='<div class="field-group"><label>纳甲</label><input id="d_naJia" value="'+esc(d.naJia||'')+'"></div>';
+html+='<div class="field-group"><label>地域对应</label><input id="d_region" value="'+esc(d.region||'')+'"></div>';
+html+='<div class="field-group"><label>风水启示</label><textarea id="d_fengShui">'+esc(d.fengShui||'')+'</textarea></div>';
+html+='<div class="field-group"><label>倪海厦·地脉道</label><textarea id="d_niHaiSha" style="min-height:200px">'+esc(d.niHaiSha||'')+'</textarea></div>';
+html+='</div>';
+
+// 人纪
+html+='<div class="tab-content '+(currentTab==='renJi'?'active':'')+'" id="tab_renJi">';
+var r=g.renJi||{};
+html+='<div class="field-group"><label>卦辞</label><textarea id="r_guaCi">'+esc(r.guaCi||'')+'</textarea></div>';
+html+='<div class="field-group"><label>彖辞</label><textarea id="r_tuanCi">'+esc(r.tuanCi||'')+'</textarea></div>';
+html+='<div class="field-group"><label>人事启示</label><input id="r_affairs" value="'+esc(r.affairs||'')+'"></div>';
+html+='<div class="field-group"><label>事业</label><input id="r_career" value="'+esc(r.career||'')+'"></div>';
+html+='<div class="field-group"><label>婚姻</label><input id="r_marriage" value="'+esc(r.marriage||'')+'"></div>';
+html+='<div class="field-group"><label>健康</label><input id="r_health" value="'+esc(r.health||'')+'"></div>';
+html+='<div class="field-group"><label>修身</label><input id="r_cultivation" value="'+esc(r.cultivation||'')+'"></div>';
+html+='<div class="field-group"><label>倪海厦·人间道</label><textarea id="r_niHaiSha" style="min-height:200px">'+esc(r.niHaiSha||'')+'</textarea></div>';
+html+='<div class="field-group"><label>爻辞（每行格式：爻名|原文|解读）</label><textarea id="r_yaoCi" style="min-height:150px">'+(r.yaoCi||[]).map(function(y){return y.yao+'|'+y.text+'|'+(y.interpret||'')}).join('\\n')+'</textarea></div>';
+html+='</div>';
+
+html+='<div class="actions">';
+html+='<button class="btn btn-primary" onclick="saveGua()">保存</button>';
+html+='<button class="btn btn-outline" onclick="loadList()">返回列表</button>';
+if(g.id>64) html+='<button class="btn btn-danger" onclick="deleteGua('+g.id+')">删除此卦</button>';
+html+='</div>';
+html+='</div>';
+app.innerHTML=html;
+window.scrollTo(0,0);
+}
+
+function switchTab(tab){currentTab=tab;document.querySelectorAll('.tab-content').forEach(function(el){el.classList.remove('active')});document.getElementById('tab_'+tab).classList.add('active');document.querySelectorAll('.tab-bar button').forEach(function(b){b.classList.remove('active')});event.target.classList.add('active')}
+
+function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+async function saveGua(){
+var g=currentGua;
+g.name=document.getElementById('f_name').value;
+g.fullName=document.getElementById('f_fullName').value;
+g.symbol=document.getElementById('f_symbol').value;
+g.upperGua=document.getElementById('f_upperGua').value;
+g.lowerGua=document.getElementById('f_lowerGua').value;
+g.yaoLines=document.getElementById('f_yaoLines').value.split(',').map(function(s){return s.trim()});
+g.tianJi={nature:val('t_nature'),virtue:val('t_virtue'),xiangCi:val('t_xiangCi'),season:val('t_season'),wuXing:val('t_wuXing'),astro:val('t_astro')};
+g.diJi={direction:{xianTian:val('d_xianTian'),houTian:val('d_houTian')},geography:val('d_geography'),heLuoNumber:{xianTian:val('d_hlXianTian'),houTian:val('d_hlHouTian')},naJia:val('d_naJia'),region:val('d_region'),fengShui:val('d_fengShui'),niHaiSha:val('d_niHaiSha')};
+var yaoCiText=val('r_yaoCi');
+var yaoCi=[];
+yaoCiText.split('\\n').forEach(function(line){var parts=line.split('|');if(parts.length>=2){yaoCi.push({yao:parts[0].trim(),text:parts[1].trim(),interpret:(parts[2]||'').trim()})}});
+g.renJi={guaCi:val('r_guaCi'),tuanCi:val('r_tuanCi'),affairs:val('r_affairs'),career:val('r_career'),marriage:val('r_marriage'),health:val('r_health'),cultivation:val('r_cultivation'),niHaiSha:val('r_niHaiSha'),yaoCi:yaoCi};
+var res=await fetch(API+'/api/admin/gua/'+g.id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(g)});
+var d=await res.json();
+if(d.success)showToast('保存成功');
+else showToast(d.error||'保存失败');
+}
+
+function val(id){var el=document.getElementById(id);return el?el.value:''}
+
+async function deleteGua(id){
+if(!confirm('确定删除此卦？'))return;
+var res=await fetch(API+'/api/admin/gua/'+id,{method:'DELETE',headers:authHeaders()});
+if(res.ok){showToast('已删除');loadList()}
+}
+
+function showAddGua(){
+currentGua={id:0,name:'',fullName:'',upperGua:'',lowerGua:'',symbol:'',yaoLines:['阳','阳','阳','阳','阳','阳'],tianJi:{},diJi:{direction:{},heLuoNumber:{}},renJi:{yaoCi:[]}};
+currentTab='tianJi';
+var app=document.getElementById('app');
+var html='<div class="edit-panel"><h2>新增卦</h2><p style="color:#999;margin-bottom:16px">填写信息后点保存，将自动分配ID</p>';
+html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+html+='<div class="field-group"><label>卦名</label><input id="f_name" value=""></div>';
+html+='<div class="field-group"><label>全称</label><input id="f_fullName" value=""></div>';
+html+='<div class="field-group"><label>卦象符号</label><input id="f_symbol" value=""></div>';
+html+='<div class="field-group"><label>爻线（逗号分隔）</label><input id="f_yaoLines" value="阳,阳,阳,阳,阳,阳"></div>';
+html+='</div>';
+html+='<div class="field-group"><label>天纪-象辞</label><textarea id="t_xiangCi"></textarea></div>';
+html+='<div class="field-group"><label>地纪-倪海厦地脉道</label><textarea id="d_niHaiSha" style="min-height:150px"></textarea></div>';
+html+='<div class="field-group"><label>人纪-倪海厦人间道</label><textarea id="r_niHaiSha" style="min-height:150px"></textarea></div>';
+html+='<div class="actions"><button class="btn btn-primary" onclick="saveNewGua()">保存</button><button class="btn btn-outline" onclick="loadList()">取消</button></div>';
+html+='</div>';
+app.innerHTML=html;
+}
+
+async function saveNewGua(){
+var g={name:val('f_name'),fullName:val('f_fullName'),symbol:val('f_symbol'),yaoLines:val('f_yaoLines').split(',').map(function(s){return s.trim()}),upperGua:'',lowerGua:'',tianJi:{nature:'',virtue:'',xiangCi:val('t_xiangCi'),season:'',wuXing:'',astro:''},diJi:{direction:{xianTian:'',houTian:''},geography:'',heLuoNumber:{xianTian:'',houTian:''},naJia:'',region:'',fengShui:'',niHaiSha:val('d_niHaiSha')},renJi:{guaCi:'',tuanCi:'',affairs:'',career:'',marriage:'',health:'',cultivation:'',niHaiSha:val('r_niHaiSha'),yaoCi:[]}};
+var res=await fetch(API+'/api/admin/gua',{method:'POST',headers:authHeaders(),body:JSON.stringify(g)});
+var d=await res.json();
+if(d.success){showToast('新增成功');loadList()}
+else showToast(d.error||'新增失败');
+}
+
+// 自动登录
+token=localStorage.getItem('yj_token');
+if(token){loadList()}
+</script>
+</body>
+</html>
